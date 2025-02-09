@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.factorialsystems.msscstore21authorization.repository.AuthorityRepository">
+    <resultMap id="authorityResultMap" type="io.factorialsystems.msscstore21authorization.model.UserAuthority">
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="authority" property="authority" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="column_list">
+        id, authority
+    </sql>
+
+    <select id="findAuthorities" resultMap="authorityResultMap" parameterType="java.util.List">
+        select
+        <include refid="column_list">
+        </include>
+        from authorities
+        where authorities.authority in
+        <foreach item="item" index="index" collection="list"  separator=",">
+            (#{item})
+        </foreach>
+    </select>
+
+    <select id="findAll" resultMap="authorityResultMap">
+        select
+        <include refid="column_list"/>
+        from authorities
+    </select>
+
+    <select id="findById" parameterType="java.lang.String" resultMap="authorityResultMap">
+        select
+        <include refid="column_list"/>
+        from authorities
+        where id = #{id}
+    </select>
+
+    <select id="findByAuthority" parameterType="java.lang.String" resultMap="authorityResultMap">
+        select
+        <include refid="column_list"/>
+        from authorities
+        where authority = #{authority,jdbcType=VARCHAR}
+    </select>
+
+    <insert id="save" parameterType="io.factorialsystems.msscstore21authorization.model.ApplicationUser">
+        insert into authorities(id, authority)
+        values(#{id}, #{authority})
+    </insert>
+
+    <update id="update" parameterType="io.factorialsystems.msscstore21authorization.model.ApplicationUser">
+        update authorities
+        <set>
+            <if test="authority != null">authority=#{authority,jdbcType=VARCHAR},</if>
+        </set>
+        where id = #{id}
+    </update>
+</mapper>

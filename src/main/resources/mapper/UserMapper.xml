@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.factorialsystems.msscstore21authorization.repository.UserRepository">
+    <resultMap id="authorityResultMap" type="io.factorialsystems.msscstore21authorization.model.UserAuthority">
+        <id column="authority_id" property="id" jdbcType="VARCHAR" />
+        <result column="authority" property="authority" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <resultMap id="userResultMap" type="io.factorialsystems.msscstore21authorization.model.ApplicationUser">
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="user_name" property="userName" jdbcType="VARCHAR"/>
+        <result column="first_name" property="firstName" jdbcType="VARCHAR"/>
+        <result column="last_name" property="lastName" jdbcType="VARCHAR"/>
+        <result column="email" property="email" jdbcType="VARCHAR"/>
+        <result column="enabled" property="enabled" jdbcType="BOOLEAN"/>
+        <result column="locked" property="locked" jdbcType="BOOLEAN"/>
+        <result column="created_on" property="createdOn" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <resultMap id="longUserResultMap" type="io.factorialsystems.msscstore21authorization.model.ApplicationUser">
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="user_name" property="userName" jdbcType="VARCHAR"/>
+        <result column="password" property="password" jdbcType="VARCHAR"/>
+        <result column="first_name" property="firstName" jdbcType="VARCHAR"/>
+        <result column="last_name" property="lastName" jdbcType="VARCHAR"/>
+        <result column="email" property="email" jdbcType="VARCHAR"/>
+        <result column="enabled" property="enabled" jdbcType="BOOLEAN"/>
+        <result column="locked" property="locked" jdbcType="BOOLEAN"/>
+        <result column="created_on" property="createdOn" jdbcType="TIMESTAMP"/>
+        <collection column="authorities" property="authorities" ofType="io.factorialsystems.msscstore21authorization.model.UserAuthority" resultMap="authorityResultMap"/>
+    </resultMap>
+
+    <sql id="short_column_list">
+        id, user_name, first_name, last_name, email, enabled, locked, created_on
+    </sql>
+
+    <sql id="long_column_list">
+        u.id, u.user_name, u.password, u.first_name, u.last_name, u.email, u.enabled, u.locked, u.created_on, a.id as authority_id, a.authority
+    </sql>
+
+    <select id="findAll" resultMap="userResultMap">
+        select
+        <include refid="short_column_list"/>
+        from users
+    </select>
+
+    <select id="findById" parameterType="java.lang.String" resultMap="userResultMap">
+        select <include refid="long_column_list"/>
+        from users as u
+        LEFT JOIN users_authorities ua ON u.id = ua.user_id
+        LEFT JOIN authorities a ON ua.authority_id = a.id
+        WHERE u.id = #{id}
+    </select>
+
+    <select id="findByUserName" resultMap="longUserResultMap" parameterType="java.lang.String">
+        select <include refid="long_column_list"/>
+        from users as u
+        LEFT JOIN users_authorities us ON u.id = us.user_id
+        LEFT JOIN authorities a ON us.authority_id = a.id
+        WHERE u.user_name = #{userName}
+    </select>
+
+    <select id="IsExistsByUserName" resultType="java.lang.Boolean">
+        select exists(select 1 from users where user_name = #{userName})
+    </select>
+
+    <select id="IsExistsByEmail" resultType="java.lang.Boolean">
+        select exists(select 1 from users where email = #{email})
+    </select>
+
+    <insert id="save" parameterType="io.factorialsystems.msscstore21authorization.model.ApplicationUser">
+        insert into users(id, user_name, first_name, last_name, email, password)
+        values(#{id}, #{userName}, #{firstName}, #{lastName}, #{email}, #{password});
+
+        <if test="authorities != null and authorities.size() > 0">
+            insert into users_authorities (user_id, authority_id) VALUES
+            <foreach collection="authorities" item="element" index="index" open ="(" separator = "),(" close=")">
+                #{id}, #{element.id}
+            </foreach>
+        </if>
+    </insert>
+
+    <update id="update" parameterType="io.factorialsystems.msscstore21authorization.model.ApplicationUser">
+        update users
+        <set>
+            <if test="firstName != null">first_name=#{firstName},</if>
+            <if test="lastName != null">last_name=#{lastName},</if>
+            <if test="enabled != null">enabled=#{enabled},</if>
+            <if test="locked != null">locked=#{locked},</if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <select id="search" parameterType="java.lang.String" resultMap="userResultMap">
+        select
+        <include refid="short_column_list"/>
+        from users
+        where user_name like CONCAT(#{search}, '%')
+    </select>
+</mapper>

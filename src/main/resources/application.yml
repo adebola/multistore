@@ -1,0 +1,59 @@
+server:
+  port: 9000
+#  baseurl: http://localhost:9000
+  servlet:
+    context-path: /auth
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+    org.springframework.web: DEBUG
+
+
+spring:
+#  devtools:
+#    restart:
+#      enabled: false
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      username:
+      password:
+  cache:
+    type: redis
+    redis:
+      time-to-live: 60000
+  threads:
+    virtual:
+      enabled: true
+  application:
+    name: store-authentication-server
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/store_authorization_db?useSSL=false&useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true
+    username: root
+    password: password
+
+  flyway:
+    clean-disabled: false
+
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: io.factorialsystems.msscpirateparrotorder.repository
+
+pagehelper:
+  helper-dialect: mysql
+  reasonable: true
+  support-methods-arguments: true
+  params: count=countSql
+
+
+multistore:
+  config:
+    allowed-origins:
+      - http://localhost:4200
+    location: http://localhost:9000/auth
+
+

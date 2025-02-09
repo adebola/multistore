@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Please Register</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body>
+<div class="login-page">
+    <div class="form">
+        <h1 th:text="'Register with ' + ${tenant}">Register with MultiStore</h1>
+        <h2>Please Register</h2>
+        <div class="error" th:if="${param.error}">
+            Invalid username and password.
+        </div>
+        <div class="error" th:if="${param.logout}">
+            You have been logged out.
+        </div>
+        <form class="login-form" th:action="@{/register}" method="post">
+            <div>
+                <input type="text" name="userName" placeholder="Username"/>
+            </div>
+            <div>
+                <input type="text" name="firstName" placeholder="FirstName"/>
+            </div>
+            <div>
+                <input type="text" name="lastName" placeholder="LastName"/>
+            </div>
+            <div>
+                <input type="email" name="email" placeholder="Email"/>
+            </div>
+            <div>
+                <input type="password" name="password" placeholder="Password"/>
+            </div>
+            <div>
+                <input type="password" name="matchingPassword" placeholder="Confirm Password"/>
+            </div>
+            <input type="hidden" name="tenantId" th:value="${tenantId}"/>
+            <input class="button" type="submit" value="Register"/>
+        </form>
+        <p>Factorial Systems!</p>
+    </div>
+</div>
+</body>
+</html>

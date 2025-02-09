@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.factorialsystems.msscstore21authorization.repository.AuthorizationRepository">
+    <resultMap id="authorizationResultMap" type="io.factorialsystems.msscstore21authorization.model.Authorization">
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="registered_client_id" property="registeredClientId" jdbcType="VARCHAR"/>
+        <result column="principal_name" property="principalName" jdbcType="VARCHAR"/>
+        <result column="authorization_grant_type" property="authorizationGrantType" jdbcType="VARCHAR"/>
+        <result column="authorized_scopes" property="authorizedScopes" jdbcType="VARCHAR"/>
+        <result column="attributes" property="attributes" jdbcType="VARCHAR"/>
+        <result column="state" property="state" jdbcType="VARCHAR"/>
+        <result column="authorization_code_value" property="authorizationCodeValue" jdbcType="VARCHAR"/>
+        <result column="authorization_code_issued_at" property="authorizationCodeIssuedAt" jdbcType="TIMESTAMP"/>
+        <result column="authorization_code_expires_at" property="authorizationCodeExpiresAt" jdbcType="TIMESTAMP"/>
+        <result column="authorization_code_metadata" property="authorizationCodeMetadata" jdbcType="VARCHAR"/>
+        <result column="access_token_value" property="accessTokenValue" jdbcType="VARCHAR"/>
+        <result column="access_token_issued_at" property="accessTokenIssuedAt" jdbcType="TIMESTAMP"/>
+        <result column="access_token_expires_at" property="accessTokenExpiresAt" jdbcType="TIMESTAMP"/>
+        <result column="access_token_metadata" property="accessTokenMetadata" jdbcType="VARCHAR"/>
+        <result column="access_token_type" property="accessTokenType" jdbcType="VARCHAR"/>
+        <result column="access_token_scopes" property="accessTokenScopes" jdbcType="VARCHAR"/>
+        <result column="refresh_token_value" property="refreshTokenValue" jdbcType="VARCHAR"/>
+        <result column="refresh_token_issued_at" property="refreshTokenIssuedAt" jdbcType="TIMESTAMP"/>
+        <result column="refresh_token_expires_at" property="refreshTokenExpiresAt" jdbcType="TIMESTAMP"/>
+        <result column="refresh_token_metadata" property="refreshTokenMetadata" jdbcType="VARCHAR"/>
+        <result column="oidc_id_token_value" property="oidcIdTokenValue" jdbcType="VARCHAR"/>
+        <result column="oidc_id_token_issued_at" property="oidcIdTokenIssuedAt" jdbcType="TIMESTAMP"/>
+        <result column="oidc_id_token_expires_at" property="oidcIdTokenExpiresAt" jdbcType="TIMESTAMP"/>
+        <result column="oidc_id_token_metadata" property="oidcIdTokenMetadata" jdbcType="VARCHAR"/>
+        <result column="oidc_id_token_claims" property="oidcIdTokenClaims" jdbcType="VARCHAR"/>
+        <result column="user_code_value" property="userCodeValue" jdbcType="VARCHAR"/>
+        <result column="device_code_value" property="deviceCodeValue" jdbcType="VARCHAR"/>
+        <result column="device_code_issued_at" property="deviceCodeIssuedAt" jdbcType="TIMESTAMP"/>
+        <result column="device_code_expires_at" property="deviceCodeExpiresAt" jdbcType="TIMESTAMP"/>
+        <result column="device_code_metadata" property="deviceCodeMetadata" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="column_list">
+        id,
+        registered_client_id,
+        principal_name,
+        authorization_grant_type,
+        authorized_scopes,
+        attributes,
+        state,
+        authorization_code_value,
+        authorization_code_issued_at,
+        authorization_code_expires_at,
+        authorization_code_metadata,
+        access_token_value,
+        access_token_issued_at,
+        access_token_expires_at,
+        access_token_metadata,
+        access_token_type,
+        access_token_scopes,
+        refresh_token_value,
+        refresh_token_issued_at,
+        refresh_token_expires_at,
+        refresh_token_metadata,
+        oidc_id_token_value,
+        oidc_id_token_issued_at,
+        oidc_id_token_expires_at,
+        oidc_id_token_metadata,
+        oidc_id_token_claims,
+        user_code_value,
+        device_code_value,
+        device_code_issued_at,
+        device_code_expires_at,
+        device_code_metadata
+    </sql>
+
+    <insert id="save" parameterType="io.factorialsystems.msscstore21authorization.model.Authorization">
+        insert into authorizations (
+            id,
+            registered_client_id,
+            principal_name,
+            authorization_grant_type,
+            authorized_scopes,
+            attributes,
+            state,
+            authorization_code_value,
+            authorization_code_issued_at,
+            authorization_code_expires_at,
+            authorization_code_metadata,
+            access_token_value,
+            access_token_issued_at,
+            access_token_expires_at,
+            access_token_metadata,
+            access_token_type,
+            access_token_scopes,
+            refresh_token_value,
+            refresh_token_issued_at,
+            refresh_token_expires_at,
+            refresh_token_metadata,
+            oidc_id_token_value,
+            oidc_id_token_issued_at,
+            oidc_id_token_expires_at,
+            oidc_id_token_metadata,
+            oidc_id_token_claims
+        ) values (
+              #{id},
+              #{registeredClientId},
+              #{principalName},
+              #{authorizationGrantType},
+              #{authorizedScopes},
+              #{attributes},
+              #{state},
+              #{authorizationCodeValue},
+              #{authorizationCodeIssuedAt},
+              #{authorizationCodeExpiresAt},
+              #{authorizationCodeMetadata},
+              #{accessTokenValue},
+              #{accessTokenIssuedAt},
+              #{accessTokenExpiresAt},
+              #{accessTokenMetadata},
+              #{accessTokenType},
+              #{accessTokenScopes},
+              #{refreshTokenValue},
+              #{refreshTokenIssuedAt},
+              #{refreshTokenExpiresAt},
+              #{refreshTokenMetadata},
+              #{oidcIdTokenValue},
+              #{oidcIdTokenIssuedAt},
+              #{oidcIdTokenExpiresAt},
+              #{oidcIdTokenMetadata},
+              #{oidcIdTokenClaims})
+    </insert>
+
+    <select id="findById" parameterType="java.lang.String" resultMap="authorizationResultMap">
+        select
+        <include refid="column_list"/>
+        from authorizations
+        where id = #{id}
+    </select>
+
+    <select id="findByState" parameterType="java.lang.String" resultMap="authorizationResultMap">
+        select
+        <include refid="column_list"/>
+        from authorizations
+        where state = #{state}
+    </select>
+
+    <select id="findByAuthorizationCodeValue" parameterType="java.lang.String" resultMap="authorizationResultMap">
+        select
+        <include refid="column_list"/>
+        from authorizations
+        where authorization_code_value = #{authorizationCodeValue}
+    </select>
+
+    <select id="findByAccessTokenValue" parameterType="java.lang.String" resultMap="authorizationResultMap">
+        select
+        <include refid="column_list"/>
+        from authorizations
+        where access_token_value = #{accessTokenValue}
+    </select>
+
+    <select id="findByRefreshTokenValue" parameterType="java.lang.String" resultMap="authorizationResultMap">
+        select
+        <include refid="column_list"/>
+        from authorizations
+        where refresh_token_value = #{refreshTokenValue}
+    </select>
+
+    <select id="findByStateOrAuthorizationCodeValueOrAccessTokenValueOrRefreshTokenValue" parameterType="java.lang.String" resultMap="authorizationResultMap">
+        select
+        <include refid="column_list"/>
+        from authorizations
+        where state = #{token}
+        or authorization_code_value = #{token}
+        or access_token_value = #{token}
+        or refresh_token_value = #{token}
+    </select>
+
+    <select id="IsExist" resultType="java.lang.Boolean">
+        select exists(select 1 from authorizations where id = #{id})
+    </select>
+
+    <update id="update" parameterType="io.factorialsystems.msscstore21authorization.model.Authorization">
+        update authorizations
+        <set>
+            <if test="registeredClientId != null">registered_client_id=#{registeredClientId,jdbcType=VARCHAR},</if>
+            <if test="principalName != null">principal_name=#{principalName,jdbcType=VARCHAR},</if>
+            <if test="authorizationGrantType != null">authorization_grant_type=#{authorizationGrantType,jdbcType=VARCHAR},</if>
+            <if test="attributes != null">attributes=#{attributes,jdbcType=VARCHAR},</if>
+            <if test="authorizedScopes != null">authorized_scopes=#{authorizedScopes,jdbcType=VARCHAR},</if>
+            <if test="state != null">state=#{state,jdbcType=VARCHAR},</if>
+            <if test="authorizationCodeValue != null">authorization_code_value=#{authorizationCodeValue,jdbcType=VARCHAR},</if>
+            <if test="authorizationCodeIssuedAt != null">authorization_code_issued_at=#{authorizationCodeIssuedAt,jdbcType=TIMESTAMP},</if>
+            <if test="authorizationCodeExpiresAt != null">authorization_code_expires_at=#{authorizationCodeExpiresAt,jdbcType=TIMESTAMP},</if>
+            <if test="authorizationCodeMetadata != null">authorization_code_metadata=#{authorizationCodeMetadata,jdbcType=VARCHAR},</if>
+            <if test="accessTokenValue != null">access_token_value=#{accessTokenValue,jdbcType=VARCHAR},</if>
+            <if test="accessTokenIssuedAt != null">access_token_issued_at=#{accessTokenIssuedAt,jdbcType=TIMESTAMP},</if>
+            <if test="accessTokenExpiresAt != null">access_token_expires_at=#{accessTokenExpiresAt,jdbcType=TIMESTAMP},</if>
+            <if test="accessTokenMetadata != null">access_token_metadata=#{accessTokenMetadata,jdbcType=VARCHAR},</if>
+            <if test="accessTokenType != null">access_token_type=#{accessTokenType,jdbcType=VARCHAR},</if>
+            <if test="accessTokenScopes != null">access_token_scopes=#{accessTokenScopes,jdbcType=VARCHAR},</if>
+            <if test="refreshTokenValue != null">refresh_token_value=#{refreshTokenValue,jdbcType=VARCHAR},</if>
+            <if test="refreshTokenIssuedAt != null">refresh_token_issued_at=#{refreshTokenIssuedAt,jdbcType=TIMESTAMP},</if>
+            <if test="refreshTokenExpiresAt != null">refresh_token_expires_at=#{refreshTokenExpiresAt,jdbcType=TIMESTAMP},</if>
+            <if test="refreshTokenMetadata != null">refresh_token_metadata=#{refreshTokenMetadata,jdbcType=VARCHAR},</if>
+            <if test="oidcIdTokenValue != null">oidc_id_token_value=#{oidcIdTokenValue,jdbcType=VARCHAR},</if>
+            <if test="oidcIdTokenIssuedAt != null">oidc_id_token_issued_at=#{oidcIdTokenIssuedAt,jdbcType=TIMESTAMP},</if>
+            <if test="oidcIdTokenExpiresAt != null">oidc_id_token_expires_at=#{oidcIdTokenExpiresAt,jdbcType=TIMESTAMP},</if>
+            <if test="oidcIdTokenMetadata != null">oidc_id_token_metadata=#{oidcIdTokenMetadata,jdbcType=VARCHAR},</if>
+            <if test="oidcIdTokenClaims != null">oidc_id_token_claims=#{oidcIdTokenClaims,jdbcType=VARCHAR},</if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteById" parameterType="java.lang.String">
+        delete from authorizations where id = #{id}
+    </delete>
+</mapper>
