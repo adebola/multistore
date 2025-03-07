@@ -53,12 +53,15 @@
         WHERE u.id = #{id}
     </select>
 
-    <select id="findByUserName" resultMap="longUserResultMap" parameterType="java.lang.String">
+    <select id="findByUserNameAndTenantId" resultMap="longUserResultMap" parameterType="java.util.Map">
         select <include refid="long_column_list"/>
         from users as u
         LEFT JOIN users_authorities us ON u.id = us.user_id
         LEFT JOIN authorities a ON us.authority_id = a.id
-        WHERE u.user_name = #{userName}
+        INNER JOIN tenants t ON u.tenant_id = t.id
+        WHERE u.user_name = #{username}
+        AND u.tenant_id = #{tenantId}
+        AND t.disabled = false
     </select>
 
     <select id="IsExistsByUserName" resultType="java.lang.Boolean">

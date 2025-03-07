@@ -4,6 +4,7 @@ import com.github.pagehelper.Page;
 import io.factorialsystems.msscstore21authorization.model.ApplicationUser;
 import org.apache.ibatis.annotations.Mapper;
 
+import java.util.Map;
 import java.util.Optional;
 
 @Mapper
@@ -14,7 +15,7 @@ public interface UserRepository {
 
     Optional<ApplicationUser> findById(String id);
 
-    Optional<ApplicationUser> findByUserName(String userName);
+    Optional<ApplicationUser> findByUserNameAndTenantId(Map<String, String> parameters);
 
     Page<ApplicationUser> findAll();
 

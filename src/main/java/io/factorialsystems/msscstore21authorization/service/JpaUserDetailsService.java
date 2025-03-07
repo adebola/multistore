@@ -21,6 +21,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -48,12 +50,15 @@ public class JpaUserDetailsService implements UserDetailsService {
         String tenantId = (String) session.getAttribute("TENANT_ID");
         log.info("loadUserByUserName Tenant ID: {}", tenantId);
 
-        Optional<ApplicationUser> applicationUser = userRepository.findByUserName(username);
+        final Map<String, String> m = new HashMap<>();
+        m.put("username", username);
+        m.put("tenantId", tenantId);
+
+        Optional<ApplicationUser> applicationUser = userRepository.findByUserNameAndTenantId(m);
 
         if (applicationUser.isEmpty()) {
-            final String errorMessage = String.format("User %s not found", username);
-            log.error(errorMessage);
-            throw new UsernameNotFoundException(errorMessage);
+            log.error("User {}. Not Found for Tenant {}", username, tenantId);
+            throw new UsernameNotFoundException("Invalid UserName or Password");
         }
 
         return applicationUser.get().toUserDetails();

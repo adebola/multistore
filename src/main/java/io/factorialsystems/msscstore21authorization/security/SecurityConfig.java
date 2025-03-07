@@ -118,8 +118,8 @@ public class SecurityConfig {
                         .collect(java.util.stream.Collectors.toSet());
 
                 context.getClaims()
-                        .claim("authorities", authorities);
-                //.claim("user", principal.getName());
+                        .claim("authorities", authorities)
+                        .claim("user", principal.getName());
             }
         };
     }
