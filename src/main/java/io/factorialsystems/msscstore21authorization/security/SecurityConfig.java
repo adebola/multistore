@@ -109,6 +109,12 @@ public class SecurityConfig {
     @Bean
     OAuth2TokenCustomizer<JwtEncodingContext> tokenCustomizer() {
         return (context) -> {
+            final String tenantId = TenantContext.getTenantId();
+
+            if (tenantId == null) {
+                throw new IllegalStateException("Tenant Id is not set");
+            }
+
             Authentication principal = context.getPrincipal();
             context.getClaims().claim("organization", "Factorial Systems");
 
@@ -119,7 +125,7 @@ public class SecurityConfig {
 
                 context.getClaims()
                         .claim("authorities", authorities)
-                        .claim("user", principal.getName());
+                        .claim("tenantId", tenantId);
             }
         };
     }

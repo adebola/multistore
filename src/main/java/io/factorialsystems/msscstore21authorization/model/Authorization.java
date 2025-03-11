@@ -47,4 +47,5 @@ public class Authorization {
     private Instant deviceCodeExpiresAt;
     // To be removed
     private String deviceCodeMetadata;
+    private String tenantId;
 }

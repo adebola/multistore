@@ -5,6 +5,9 @@ import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.factorialsystems.msscstore21authorization.model.Authorization;
 import io.factorialsystems.msscstore21authorization.repository.AuthorizationRepository;
+import io.factorialsystems.msscstore21authorization.security.TenantContext;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.security.jackson2.SecurityJackson2Modules;
@@ -33,13 +36,15 @@ import java.util.function.Consumer;
 @Slf4j
 @Service
 public class JpaOAuth2AuthorizationService implements OAuth2AuthorizationService {
+    private final HttpServletRequest request;
     private final AuthorizationRepository authorizationRepository;
     private final RegisteredClientRepository registeredClientRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public JpaOAuth2AuthorizationService(AuthorizationRepository authorizationRepository, RegisteredClientRepository registeredClientRepository) {
+    public JpaOAuth2AuthorizationService(AuthorizationRepository authorizationRepository, RegisteredClientRepository registeredClientRepository, HttpServletRequest request) {
         this.authorizationRepository = authorizationRepository;
         this.registeredClientRepository = registeredClientRepository;
+        this.request = request;
 
         ClassLoader classLoader = JpaOAuth2AuthorizationService.class.getClassLoader();
         List<Module> securityModules = SecurityJackson2Modules.getModules(classLoader);
@@ -154,6 +159,10 @@ public class JpaOAuth2AuthorizationService implements OAuth2AuthorizationService
             builder.token(idToken, metadata -> metadata.putAll(parseMap(entity.getOidcIdTokenMetadata())));
         }
 
+        if (entity.getTenantId() != null) {
+            TenantContext.setTenantId(entity.getTenantId());
+        }
+
         return builder.build();
     }
 
@@ -212,6 +221,15 @@ public class JpaOAuth2AuthorizationService implements OAuth2AuthorizationService
         );
         if (oidcIdToken != null) {
             entity.setOidcIdTokenClaims(writeMap(oidcIdToken.getClaims()));
+        }
+
+        final HttpSession session = request.getSession(false);
+
+        if (session != null) {
+            final String tenantId = (String) session.getAttribute("TENANT_ID");
+            if (tenantId != null) {
+                entity.setTenantId(tenantId);
+            }
         }
 
         return entity;
