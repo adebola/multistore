@@ -125,11 +125,11 @@ public class SecurityConfig {
 
                 context.getClaims()
                         .claim("authorities", authorities)
-                        .claim("tenantId", tenantId);
+                        .claim("tenant", tenantId)
+                        .claim("id", TenantContext.getUserId());
             }
         };
     }
-
 
     @Bean
     public PasswordEncoder passwordEncoder() {

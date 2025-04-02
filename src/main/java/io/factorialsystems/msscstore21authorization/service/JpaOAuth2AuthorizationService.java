@@ -159,9 +159,23 @@ public class JpaOAuth2AuthorizationService implements OAuth2AuthorizationService
             builder.token(idToken, metadata -> metadata.putAll(parseMap(entity.getOidcIdTokenMetadata())));
         }
 
-        if (entity.getTenantId() != null) {
-            TenantContext.setTenantId(entity.getTenantId());
+        final String tenantId = entity.getTenantId();
+
+        if (tenantId == null) {
+            final String errorMessage = "Null tenant id in Session, unable to build Authorization object";
+            log.error(errorMessage);
+            throw  new IllegalStateException(errorMessage);
         }
+        TenantContext.setTenantId(entity.getTenantId());
+
+        final String userId = entity.getUserId();
+        if (userId == null) {
+            final String errorMessage = "Null user id in Context, unable to build Authorization object";
+            log.error(errorMessage);
+            throw  new IllegalStateException(errorMessage);
+        }
+
+        TenantContext.setUserId(userId);
 
         return builder.build();
     }
@@ -229,6 +243,12 @@ public class JpaOAuth2AuthorizationService implements OAuth2AuthorizationService
             final String tenantId = (String) session.getAttribute("TENANT_ID");
             if (tenantId != null) {
                 entity.setTenantId(tenantId);
+            }
+
+            final String userId = (String)session.getAttribute("USER_ID");
+            if (userId != null) {
+                log.info("OAuth2AuthorizationService User ID: {}", userId);
+                entity.setUserId(userId);
             }
         }
 

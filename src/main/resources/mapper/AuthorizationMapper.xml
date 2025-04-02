@@ -35,6 +35,7 @@
         <result column="device_code_expires_at" property="deviceCodeExpiresAt" jdbcType="TIMESTAMP"/>
         <result column="device_code_metadata" property="deviceCodeMetadata" jdbcType="VARCHAR"/>
         <result column="tenant_id" property="tenantId" jdbcType="VARCHAR"/>
+        <result column="user_id" property="userId" jdbcType="VARCHAR"/>
     </resultMap>
 
     <sql id="column_list">
@@ -69,7 +70,8 @@
         device_code_issued_at,
         device_code_expires_at,
         device_code_metadata,
-        tenant_id
+        tenant_id,
+        user_id
     </sql>
 
     <insert id="save" parameterType="io.factorialsystems.msscstore21authorization.model.Authorization">
@@ -100,7 +102,8 @@
             oidc_id_token_expires_at,
             oidc_id_token_metadata,
             oidc_id_token_claims,
-            tenant_id
+            tenant_id,
+            user_id
         ) values (
               #{id},
               #{registeredClientId},
@@ -128,7 +131,8 @@
               #{oidcIdTokenExpiresAt},
               #{oidcIdTokenMetadata},
               #{oidcIdTokenClaims},
-              #{tenantId})
+              #{tenantId},
+              #{userId})
     </insert>
 
     <select id="findById" parameterType="java.lang.String" resultMap="authorizationResultMap">

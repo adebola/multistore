@@ -61,6 +61,9 @@ public class JpaUserDetailsService implements UserDetailsService {
             throw new UsernameNotFoundException("Invalid UserName or Password");
         }
 
+        final String userId = applicationUser.get().getId();
+        session.setAttribute("USER_ID", userId);
+
         return applicationUser.get().toUserDetails();
     }
 

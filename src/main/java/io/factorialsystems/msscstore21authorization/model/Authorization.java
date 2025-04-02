@@ -48,4 +48,5 @@ public class Authorization {
     // To be removed
     private String deviceCodeMetadata;
     private String tenantId;
+    private String userId;
 }
