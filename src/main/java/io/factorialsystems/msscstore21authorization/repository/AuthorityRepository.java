@@ -10,6 +10,7 @@ import java.util.Optional;
 @Mapper
 public interface AuthorityRepository {
     List<UserAuthority> findAuthorities(List<String> item);
+    List<UserAuthority> findDefaultRoleForTenant(String id);
     Page<UserAuthority> findAll();
     Optional<UserAuthority> findById(String id);
     Optional<UserAuthority> findByAuthority(String authority);

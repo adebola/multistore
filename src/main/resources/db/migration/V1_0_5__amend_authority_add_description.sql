@@ -1,0 +1,1 @@
+ALTER table authorities ADD COLUMN description varchar(1024);

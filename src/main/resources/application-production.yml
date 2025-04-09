@@ -58,4 +58,15 @@ multistore:
       - http://localhost:4200
     location: http://localhost:9000/auth
 
+rabbitmq:
+  queue:
+    audit:
+      name: audit-queue
+  exchange:
+    name: topic-exchange
+  routing:
+    audit:
+      key: audit-routing
+
+
 

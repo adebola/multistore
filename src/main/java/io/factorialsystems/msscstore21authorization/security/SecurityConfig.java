@@ -4,6 +4,7 @@ import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
@@ -75,10 +76,17 @@ public class SecurityConfig {
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http)
             throws Exception {
         http
-                //.addFilterBefore(tenantIdCaptureFilter, UsernamePasswordAuthenticationFilter.class)
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests((authorize) -> authorize
-                        .requestMatchers("/error", "/register", "/images/**", "/webjars/**", "/css/**", "/assets/**", "/favicon.ico").permitAll()
+                        .requestMatchers(
+                                "/error",
+                                "/register",
+                                "/images/**",
+                                "/webjars/**",
+                                "/css/**",
+                                "/assets/**",
+                                "/favicon.ico",
+                                "/confirm").permitAll()
                         .anyRequest().authenticated()
                 )
                 // Form login handles the redirect to the login page from the
@@ -107,7 +115,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    OAuth2TokenCustomizer<JwtEncodingContext> tokenCustomizer() {
+    OAuth2TokenCustomizer<JwtEncodingContext> tokenCustomizer(HttpServletRequest request) {
         return (context) -> {
             final String tenantId = TenantContext.getTenantId();
 

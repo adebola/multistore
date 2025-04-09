@@ -29,18 +29,26 @@ public class ApplicationUser {
     private Boolean locked;
     private String password;
     private Instant createdOn;
+    private String tenantId;
     private Set<UserAuthority> authorities;
 
-    public static ApplicationUser create(String userName, String firstName, String lastName, String email, String password,  Set<UserAuthority> authorities) {
+    public static ApplicationUser create(
+            String userName,
+            String firstName,
+            String lastName,
+            String email,
+            String password,
+            String tenantId,
+            Set<UserAuthority> authorities
+    ) {
         ApplicationUser au = new ApplicationUser();
         au.id = UUID.randomUUID().toString();
         au.userName = userName;
         au.firstName = firstName;
         au.lastName = lastName;
         au.email = email;
-        au.enabled = false;
-        au.locked = true;
         au.password = password;
+        au.tenantId = tenantId;
         au.authorities = authorities;
 
         return au;

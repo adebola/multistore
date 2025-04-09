@@ -1,6 +1,5 @@
 server:
   port: 9000
-#  baseurl: http://localhost:9000
   servlet:
     context-path: /auth
 
@@ -9,11 +8,12 @@ logging:
     org.springframework.security: DEBUG
     org.springframework.web: DEBUG
 
-
 spring:
-#  devtools:
-#    restart:
-#      enabled: false
+  rabbitmq:
+      host: localhost
+      port: 5672
+      username: user
+      password: password
 
   data:
     redis:
@@ -54,6 +54,21 @@ multistore:
   config:
     allowed-origins:
       - http://localhost:4200
+      - https://jwt.io
     location: http://localhost:9000/auth
+
+rabbitmq:
+  queue:
+    audit:
+      name: audit-queue
+    mail:
+      name: mail-queue
+  exchange:
+    name: topic-exchange
+  routing:
+    audit:
+      key: audit-routing
+    mail:
+      key: mail-routing
 
 

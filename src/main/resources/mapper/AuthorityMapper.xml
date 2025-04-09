@@ -11,6 +11,13 @@
         id, authority
     </sql>
 
+    <select id="findDefaultRoleForTenant" resultMap="authorityResultMap" parameterType="java.lang.String">
+        select
+        <include refid="column_list"/>
+        from authorities
+        where tenant_id = #{id} and default_role = true
+    </select>
+
     <select id="findAuthorities" resultMap="authorityResultMap" parameterType="java.util.List">
         select
         <include refid="column_list">

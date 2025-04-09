@@ -3,6 +3,7 @@ package io.factorialsystems.msscstore21authorization.service;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import io.factorialsystems.msscstore21authorization.dto.ApplicationUserDTO;
+import io.factorialsystems.msscstore21authorization.dto.MailRequestDTO;
 import io.factorialsystems.msscstore21authorization.dto.PagedDTO;
 import io.factorialsystems.msscstore21authorization.dto.RegisterUserDTO;
 import io.factorialsystems.msscstore21authorization.exception.UserExistsException;
@@ -11,6 +12,7 @@ import io.factorialsystems.msscstore21authorization.model.ApplicationUser;
 import io.factorialsystems.msscstore21authorization.model.UserAuthority;
 import io.factorialsystems.msscstore21authorization.repository.AuthorityRepository;
 import io.factorialsystems.msscstore21authorization.repository.UserRepository;
+import io.factorialsystems.msscstore21authorization.security.AuthorizationProperties;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -21,22 +23,21 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class JpaUserDetailsService implements UserDetailsService {
+    private final MQService mqService;
     private final HttpServletRequest request;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthorityRepository authorityRepository;
     private final ApplicationUserMapper applicationUserMapper;
+    private final AuthorizationProperties authorizationProperties;
 
-    public static final String DEFAULT_USER_ROLE = "USER";
+    public static final String CREATE_USER = "Create-User";
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -67,18 +68,6 @@ public class JpaUserDetailsService implements UserDetailsService {
         return applicationUser.get().toUserDetails();
     }
 
-    public ApplicationUserDTO loadUserById(String id) {
-        Optional<ApplicationUser> applicationUser = userRepository.findById(id);
-
-        if (applicationUser.isEmpty()) {
-            final String errorMessage = String.format("User %s not found", id);
-            log.error(errorMessage);
-            throw new UsernameNotFoundException(errorMessage);
-        }
-
-        return applicationUserMapper.toDtoFat(applicationUser.get());
-    }
-
     public PagedDTO<ApplicationUserDTO> loadUsers(Integer pageNumber, Integer pageSize) {
         PageHelper.startPage(pageNumber, pageSize);
         Page<ApplicationUser> users = userRepository.findAll();
@@ -91,21 +80,39 @@ public class JpaUserDetailsService implements UserDetailsService {
             throw new IllegalArgumentException("Passwords do not match");
         }
 
-        if (userRepository.IsExistsByUserName(registerUserDTO.getUserName())) {
+        final HttpSession session = request.getSession(false);
+
+        if (session == null) {
+            log.error("Session is null creating User {}", registerUserDTO.getUserName());
+            throw new RuntimeException("Null Session creating User");
+        }
+
+        final String tenantId = (String) session.getAttribute("TENANT_ID");
+        if (tenantId == null) {
+            log.error("TenantId is null creating User {}", registerUserDTO.getUserName());
+            throw new RuntimeException("Null TenantId creating User");
+        }
+
+        final Map<String, String> m = new HashMap<>();
+        m.put("username", registerUserDTO.getUserName());
+        m.put("tenantId", tenantId);
+        m.put("email", registerUserDTO.getEmail());
+
+        if (userRepository.IsExistsByUserNameInTenant(m)) {
             log.error("User {} already exists", registerUserDTO.getUserName());
             throw new UserExistsException(String.format("User %s already exists", registerUserDTO.getUserName()));
         }
 
-        if (userRepository.IsExistsByEmail(registerUserDTO.getEmail())) {
+        if (userRepository.IsExistsByEmailInTenant(m)) {
             log.error("Email {} already exists", registerUserDTO.getEmail());
             throw new UserExistsException(String.format("Email %s already exists", registerUserDTO.getEmail()));
         }
 
-        Optional<UserAuthority> userAuthority = authorityRepository.findByAuthority(DEFAULT_USER_ROLE);
+        List<UserAuthority> authorities = authorityRepository.findDefaultRoleForTenant(tenantId);
 
-        if (userAuthority.isEmpty()) {
-            log.error("Default user role {} not found", DEFAULT_USER_ROLE);
-            throw new IllegalArgumentException(String.format("Default user role %s not found", DEFAULT_USER_ROLE));
+        if (authorities.isEmpty()) {
+            log.error("Default user role not found for Tenant {}", tenantId);
+            throw new IllegalArgumentException(String.format("Default user role not found for tenantId: %s", tenantId));
         }
 
         ApplicationUser applicationUser = ApplicationUser.create(
@@ -114,38 +121,37 @@ public class JpaUserDetailsService implements UserDetailsService {
                 registerUserDTO.getLastName(),
                 registerUserDTO.getEmail(),
                 passwordEncoder.encode(registerUserDTO.getPassword()),
-                Set.of(userAuthority.get())
+                tenantId,
+                Set.of(authorities.getFirst())
         );
 
         userRepository.save(applicationUser);
-        log.info("User created successfully {}", applicationUser);
+        mqService.audit(CREATE_USER,
+                String.format("User %s registered for Tenant %s", applicationUser.getUserName(), tenantId),
+                applicationUser.getUserName(),
+                tenantId
+        );
+        log.info("User created successfully {} for TenantId {}", applicationUser.getUserName(), tenantId);
+
+        // Send confirmation email
+        final MailRequestDTO dto = getMailRequestDTO(applicationUser, tenantId);
+        log.info("Sending confirmation email to {}", dto);
+        mqService.sendMail(dto);
     }
 
-    public void updateUser(String id, ApplicationUserDTO applicationUserDto) {
-        Optional<ApplicationUser> user = userRepository.findById(id);
+    private MailRequestDTO getMailRequestDTO(ApplicationUser applicationUser, String tenantId) {
+        var confirmationLink = String.format("%s/confirm?id=%s", authorizationProperties.getLocation(), applicationUser.getId());
+        var subject = "Confirm your email address";
 
-        if (user.isEmpty()) {
-            log.error("User {} not found for submitted applicationUserDto {}", id, applicationUserDto);
-            throw new UsernameNotFoundException(String.format("User %s not found", id));
-        }
+        var subMessage = """
+                Welcome to Factorial Store!<br>
+                Your account has been created successfully.<br>
+                Please click the link below to confirm your email address:<br><br><br>
+                <a href="%s">Confirm Email</a><br><br><br>
+                """;
 
-        ApplicationUser applicationUser = applicationUserMapper.toEntity(applicationUserDto);
-        applicationUser.setId(id);
-
-        log.info("User updated successfully {}", applicationUser);
-        userRepository.update(applicationUser);
-    }
-
-    public void addRoles(Set<String> roles) {
-
-    }
-
-    public void removeRoles(Set<String> roles) {
-
-    }
-
-    public void changePassword(String oldPassword, String newPassword) {
-
+        var message = String.format(subMessage, confirmationLink);
+        return new MailRequestDTO(applicationUser.getEmail(), subject, message, tenantId);
     }
 
     private PagedDTO<ApplicationUserDTO> createDTO(Page<ApplicationUser> users) {

@@ -10,18 +10,12 @@ import java.util.Optional;
 @Mapper
 public interface UserRepository {
     void save(ApplicationUser applicationUser);
-
     void update(ApplicationUser applicationUser);
-
     Optional<ApplicationUser> findById(String id);
-
     Optional<ApplicationUser> findByUserNameAndTenantId(Map<String, String> parameters);
-
     Page<ApplicationUser> findAll();
-
     Page<ApplicationUser> search(String search);
-
-    Boolean IsExistsByUserName(String userName);
-
-    Boolean IsExistsByEmail(String email);
+    Boolean IsExistsByUserNameInTenant(Map<String, String> parameters);
+    Boolean IsExistsByEmailInTenant(Map<String, String> parameters);
+    void confirmUser(String id);
 }

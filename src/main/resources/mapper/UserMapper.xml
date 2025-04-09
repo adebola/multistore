@@ -64,17 +64,17 @@
         AND t.disabled = false
     </select>
 
-    <select id="IsExistsByUserName" resultType="java.lang.Boolean">
-        select exists(select 1 from users where user_name = #{userName})
+    <select id="IsExistsByUserNameInTenant" resultType="java.lang.Boolean" parameterType="java.util.Map">
+        select exists(select 1 from users where user_name = #{userName} and tenant_id = #{tenantId})
     </select>
 
-    <select id="IsExistsByEmail" resultType="java.lang.Boolean">
-        select exists(select 1 from users where email = #{email})
+    <select id="IsExistsByEmailInTenant" resultType="java.lang.Boolean" parameterType="java.util.Map">
+        select exists(select 1 from users where email = #{email} and tenant_id = #{tenantId})
     </select>
 
     <insert id="save" parameterType="io.factorialsystems.msscstore21authorization.model.ApplicationUser">
-        insert into users(id, user_name, first_name, last_name, email, password)
-        values(#{id}, #{userName}, #{firstName}, #{lastName}, #{email}, #{password});
+        insert into users(id, user_name, first_name, last_name, email, password, tenant_id)
+        values(#{id}, #{userName}, #{firstName}, #{lastName}, #{email}, #{password}, #{tenantId});
 
         <if test="authorities != null and authorities.size() > 0">
             insert into users_authorities (user_id, authority_id) VALUES
@@ -101,4 +101,9 @@
         from users
         where user_name like CONCAT(#{search}, '%')
     </select>
+
+    <update id="confirmUser" parameterType="java.lang.String">
+        update users set enabled = true, locked = false
+        where id = #{id}
+    </update>
 </mapper>
